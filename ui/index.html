@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Data Migration</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Data Migration</h1>
+<button id="start-migration">Start Migration</button>
+<div id="migration-status">
+  <p>Status: <span id="status-text">Not Started</span></p>
+  <p>Progress: <span id="progress-percentage">0%</span></p>
+  <div id="progress-bar">
+    <div id="progress-bar-fill"></div>
+  </div>
+  <ul id="error-list"></ul>
+</div>
+
+<script>
+const startMigrationButton = document.getElementById('start-migration');
+const statusText = document.getElementById('status-text');
+const progressPercentage = document.getElementById('progress-percentage');
+const progressBarFill = document.getElementById('progress-bar-fill');
+const errorList = document.getElementById('error-list');
+
+startMigrationButton.addEventListener('click', async () => {
+  try {
+    const response = await fetch('/api/migration/start', { method: 'POST' });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    statusText.textContent = 'Running';
+    updateStatus();
+  } catch (error) {
+    statusText.textContent = 'Error';
+    errorList.innerHTML += `<li>${error.message}</li>`;
+  }
+});
+
+async function updateStatus() {
+  const response = await fetch('/api/migration/status');
+  const data = await response.json();
+  statusText.textContent = data.isRunning ? 'Running' : 'Completed';
+  progressPercentage.textContent = `${data.progress}%`;
+  progressBarFill.style.width = `${data.progress}%`;
+  errorList.innerHTML = '';
+  if (data.errors.length > 0) {
+    data.errors.forEach(error => {
+      errorList.innerHTML += `<li>${error}</li>`;
+    });
+  }
+  if (!data.isRunning) {
+    return;
+  }
+  setTimeout(updateStatus, 1000);
+}
+</script>
+</body>
+</html>
