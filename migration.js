@@ -1,7 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const pg = require('pg');
-const { raw } = require('mysql2');
-const { validate } = require('uuid');
 
 // Database configuration
 const mysqlConfig = {
